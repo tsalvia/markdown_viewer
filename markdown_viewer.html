@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Markdown Viewer</title>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- highlight code block -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+
+    <!-- main scripts -->
+    <script type="text/javascript">
+        $(document).ready(function () {
+            if (window.File) {
+                $("#drop").on("drop", onDrop);
+                $("#choice").on("change", onChange);
+            } else {
+                window.alert("このブラウザでは、利用できません。");
+            }
+
+            $("#drop").on("dragover", onDragOver);
+        });
+
+        function onDrop() {
+            const files = event.dataTransfer.files;
+            loadLocalFile(files);
+            event.preventDefault();
+        }
+
+        function onDragOver() {
+            event.preventDefault();
+        }
+
+        function onChange() {
+            const files = event.target.files;
+            loadLocalFile(files);
+            event.preventDefault();
+        }
+
+        function loadLocalFile(files) {
+            const file = files[0];
+            const reader = new FileReader();
+
+            if (!file.name.match("md.*") && !file.name.match("markdown.*")) {
+                alert("拡張子が.md以外のファイルが指定されました。");
+                return;
+            }
+
+            reader.onerror = function (event) {
+                alert("読込み時にエラーが発生しました。");
+                return;
+            }
+
+            reader.onload = function (event) {
+                $("#preview").html(marked(reader.result, { langPrefix: "" }));
+                create_table_of_contains();
+                update_highlight();
+                setting_table_style();
+            }
+            reader.readAsText(file, "shift-jis");
+        }
+
+        function create_table_of_contains() {
+            const toc = $("#toc");
+            toc.empty();
+            toc.html("<h5>目次</h5>");
+
+            $("h1, h2, h3").each(function (i, element) {
+                /* Ignore title's h1 tag (i == 0) */
+                if (element.tagName === "H1" && i != 0) {
+                    const ul = create_toc_element(element);
+                    toc.append(ul);
+                }
+
+                if (element.tagName === "H2") {
+                    const ul = create_toc_element(element);
+                    const lastLi = $("#toc > ul:last > li:last");
+                    lastLi.append(ul);
+                }
+
+                if (element.tagName === "H3") {
+                    const ul = create_toc_element(element);
+                    const lastLi = $("#toc > ul:last > li:last > ul:last > li:last");
+                    lastLi.append(ul);
+                }
+            });
+        }
+
+        function create_toc_element(element) {
+            const ul = $("<ul>");
+            const li = $("<li>");
+            const a = $("<a class='text-info'>");
+            a.html(element.textContent);
+            a.attr("href", "#" + element.id);
+            li.append(a);
+            ul.append(li);
+            return ul
+        }
+
+        function update_highlight() {
+            const nodelist = document.querySelectorAll('pre code');
+            const node = Array.prototype.slice.call(nodelist, 0);
+            node.forEach(function (element) {
+                hljs.highlightBlock(element);
+            });
+        }
+
+        function setting_table_style() {
+            const nodelist = document.querySelectorAll('table');
+            const node = Array.prototype.slice.call(nodelist, 0);
+            node.forEach(function (element) {
+                $(element).addClass("table table-striped table-bordered");
+            });
+        }
+    </script>
+
+</head>
+
+<body>
+    <!-- header -->
+    <div class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a data-toggle="collapse" href="#usage" aria-expanded="false" aria-controls="usage">
+                <strong class="text-white">Markdown Viewer</strong>
+            </a>
+        </div>
+    </div>
+    <div id="usage" class="jumbotron collapse show">
+        <div class="container">
+            <h1 class="text-dark">Markdown Viewer</h1>
+            <div class="text-muted">
+                Markdown形式のファイル（.md、.markdown）をHTML形式に変換して表示します。<br>
+                下記の場所にファイルを指定してください。
+            </div>
+        </div>
+        <div id="drop" class="container">
+            <div class="border border-dark rounded-lg py-5 text-muted text-center"
+                style="border: 3px dashed !important;">
+                <div>ここにファイルをドロップ</div>
+                <div>または</div>
+                <label>
+                    <span id="choice" class="btn btn-primary btn-sm">
+                        ファイルを選択
+                        <input type="file" style="display: none;">
+                    </span>
+                </label>
+            </div>
+        </div>
+        <div class="container">
+            <a class="btn btn-info btn-sm mt-3" href="#usage" data-toggle="collapse" aria-expanded="false"
+                aria-controls="usage">
+                非表示
+            </a>
+        </div>
+    </div>
+
+    <!-- markdown to html -->
+    <div class="container py-5">
+        <div class="row">
+            <div id="toc" class="col-md-4"></div>
+            <div id="preview" class="col-md-8"></div>
+        </div>
+    </div>
+
+    <!-- footer -->
+    <footer class="footer bg-muted pb-3">
+        <div class="container">
+            <p class="float-right">
+                <a href="#" class="text-info">Back to top</a>
+            </p>
+            <strong class="text-muted">Markdown Viewer</strong>
+            <span class="text-muted">&copy; 2019 tsalvia. All Rights Reserved.</span>
+            <div>
+                <a class="text-info" href="https://github.com/tsalvia/markdown_viewer">GitHub -
+                    tsalvia/markdown_viewer</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
