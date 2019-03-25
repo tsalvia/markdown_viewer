@@ -14,9 +14,23 @@
 
     <!-- markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style type="text/css">
+    h1 {
+        font-size: 1.75rem;
+        text-decoration: underline;
+    }
+    h2 {
+        font-size: 1.5rem;
+        text-decoration: underline;
+    }
+    h3 {
+        font-size: 1.25rem;
+        text-decoration: underline;
+    }
+    </style>
 
     <!-- highlight code block -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/monokai.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/monokai-sublime.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
 
     <!-- main scripts -->
@@ -52,10 +66,11 @@
             const file = files[0];
             const reader = new FileReader();
 
-            if (!file.name.match("md.*") && !file.name.match("markdown.*")) {
-                alert("拡張子が.md以外のファイルが指定されました。");
+            if (!file.name.match(/\.(md|markdown)$/i)) {
+                alert("拡張子が.md もしくは .markdown 以外のファイルが指定されました。");
                 return;
             }
+            console.log(file.name);
 
             reader.onerror = function (event) {
                 alert("読込み時にエラーが発生しました。");
@@ -77,8 +92,7 @@
             toc.html("<h5>目次</h5>");
 
             $("h1, h2, h3").each(function (i, element) {
-                /* Ignore title's h1 tag (i == 0) */
-                if (element.tagName === "H1" && i != 0) {
+                if (element.tagName === "H1") {
                     const ul = create_toc_element(element);
                     toc.append(ul);
                 }
@@ -138,7 +152,7 @@
     </div>
     <div id="usage" class="jumbotron collapse show">
         <div class="container">
-            <h1 class="text-dark">Markdown Viewer</h1>
+            <span class="display-4 text-dark">Markdown Viewer</span>
             <div class="text-muted">
                 Markdown形式のファイル（.md、.markdown）をHTML形式に変換して表示します。<br>
                 下記の場所にファイルを指定してください。
