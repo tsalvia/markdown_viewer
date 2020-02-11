@@ -2,7 +2,7 @@
 <html lang="ja">
 
 <head>
-    <meta charset="shift-jis">
+    <meta http-equiv="content-type" charset="utf-8">
     <title>Markdown Viewer</title>
 
     <!-- jQuery -->
@@ -83,7 +83,7 @@
                 update_highlight();
                 setting_table_style();
             }
-            reader.readAsText(file, "shift-jis");
+            reader.readAsText(file, "utf-8");
         }
 
         function create_table_of_contains() {
